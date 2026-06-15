@@ -241,13 +241,13 @@ export default function DeliveryMetrics({ orders, executives }: DeliveryMetricsP
               <thead>
                 <tr className="bg-slate-50/50 text-slate-400 font-bold text-[10px] border-b border-slate-100 uppercase tracking-wider">
                   <th className="py-4 px-6">Employee</th>
-                  <th className="py-3 px-6">Role</th>
                   <th className="py-3 px-6 text-center">Assigned</th>
                   <th className="py-3 px-6 text-center">Completed</th>
                   <th className="py-3 px-6 text-center">Rate</th>
                   <th className="py-3 px-6">Salary</th>
                   <th className="py-3 px-6">Incentives</th>
                   <th className="py-3 px-6">Total Payout</th>
+                  <th className="py-3 px-6">Cash to Collect</th>
                   <th className="py-3 px-6 text-right">Settlement</th>
                 </tr>
               </thead>
@@ -284,9 +284,6 @@ export default function DeliveryMetrics({ orders, executives }: DeliveryMetricsP
                             </span>
                           </div>
                         </td>
-                        <td className="py-4 px-6 font-semibold text-slate-500">
-                          Delivery Agent
-                        </td>
                         <td className="py-4 px-6 text-center font-bold text-slate-600">
                           {stats.assignedCount}
                         </td>
@@ -310,6 +307,15 @@ export default function DeliveryMetrics({ orders, executives }: DeliveryMetricsP
                         </td>
                         <td className="py-4 px-6 font-extrabold text-slate-900 text-sm">
                           ₹{stats.totalPayoutVal}
+                        </td>
+                        <td className="py-4 px-6 font-extrabold text-sm">
+                          {stats.cashCollectedToday > 0 ? (
+                            <span className="text-orange-600">
+                              ₹{stats.cashCollectedToday.toLocaleString("en-IN")}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">₹0</span>
+                          )}
                         </td>
                         <td className="py-4 px-6 text-right">
                           {stats.cashCollectedToday > 0 ? (

@@ -69,7 +69,6 @@ const DeliveryOrders = () => {
   const [execName, setExecName] = useState<string | null>(null);
 
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [sortBy, setSortBy] = useState<"newest" | "nearest">("newest");
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
@@ -294,7 +293,7 @@ const DeliveryOrders = () => {
 
   const activeOrders = orders.filter((o) => o.status !== "delivered");
   const sortedActiveOrders = [...activeOrders].sort((a, b) => {
-    if (sortBy === "nearest" && currentLocation) {
+    if (currentLocation) {
       const aLat = a.latitude;
       const aLng = a.longitude;
       const bLat = b.latitude;
@@ -308,7 +307,11 @@ const DeliveryOrders = () => {
       if (aLat && aLng) return -1;
       if (bLat && bLng) return 1;
     }
-    return 0;
+    
+    // Fallback: sort by newest first (createdAt descending)
+    const timeA = a.createdAt?.seconds || 0;
+    const timeB = b.createdAt?.seconds || 0;
+    return timeB - timeA;
   });
   const deliveredOrders = orders.filter((o) => o.status === "delivered");
 
@@ -565,28 +568,9 @@ const DeliveryOrders = () => {
                 Pending Deliveries ({activeOrders.length})
               </p>
               {currentLocation && (
-                <div className="flex bg-slate-100 rounded-lg p-0.5 border border-slate-200/50">
-                  <button
-                    onClick={() => setSortBy("newest")}
-                    className={`text-[10px] font-bold px-2.5 py-1 rounded-md transition-all ${
-                      sortBy === "newest"
-                        ? "bg-white text-slate-800 shadow-sm"
-                        : "text-slate-400 hover:text-slate-600"
-                    }`}
-                  >
-                    Newest
-                  </button>
-                  <button
-                    onClick={() => setSortBy("nearest")}
-                    className={`text-[10px] font-bold px-2.5 py-1 rounded-md transition-all ${
-                      sortBy === "nearest"
-                        ? "bg-white text-slate-800 shadow-sm"
-                        : "text-slate-400 hover:text-slate-600"
-                    }`}
-                  >
-                    Nearest
-                  </button>
-                </div>
+                <span className="text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-100 px-2.5 py-0.5 rounded-full shadow-sm">
+                  Sorted by Proximity
+                </span>
               )}
             </div>
             {sortedActiveOrders.map((order) => {
