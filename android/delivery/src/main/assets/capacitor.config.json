@@ -1,0 +1,11 @@
+{
+	"appId": "com.eggbucket.delivery",
+	"appName": "Egg Bucket Delivery",
+	"webDir": "dist",
+	"plugins": {
+		"StatusBar": {
+			"backgroundColor": "#00000000",
+			"overlaysWebView": true
+		}
+	}
+}
