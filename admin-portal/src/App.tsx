@@ -31,9 +31,9 @@ import {
   Lock,
   Phone,
   MapPin,
-  Clock,
-  Egg
+  Clock
 } from "lucide-react";
+import eggLogo from "./assets/logo-egg-png.png";
 
 type Tab = "dashboard" | "orders" | "customers" | "delivery" | "pricing";
 
@@ -179,12 +179,9 @@ export default function App() {
     return (
       <div className="min-h-screen bg-gradient-to-tr from-slate-950 via-slate-900 to-orange-950 flex items-center justify-center p-6">
         <div className="w-full max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6">
-          <div className="text-center space-y-2">
-            <div className="w-16 h-16 bg-gradient-to-tr from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-orange-500/20">
-              <Egg className="h-9 w-9 text-white animate-pulse" />
-            </div>
-            <h1 className="text-2xl font-extrabold text-white tracking-tight pt-2">Egg Bucket</h1>
-            <p className="text-slate-400 text-sm font-medium">Administrative Web Portal</p>
+          <div className="text-center space-y-3">
+            <img src={eggLogo} alt="Egg Bucket Logo" className="h-16 w-auto mx-auto object-contain" />
+            <p className="text-slate-400 text-sm font-medium tracking-wide">Administrative Web Portal</p>
           </div>
 
           {loginError && (
@@ -241,14 +238,9 @@ export default function App() {
       <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0">
         <div className="p-6 space-y-8">
           {/* Brand Logo */}
-          <div className="flex items-center gap-2.5 px-2">
-            <div className="w-8.5 h-8.5 bg-orange-500 rounded-lg flex items-center justify-center">
-              <Egg className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-base font-black text-white leading-none">Egg Bucket</h2>
-              <span className="text-[10px] text-orange-500 font-extrabold tracking-widest uppercase">Admin Portal</span>
-            </div>
+          <div className="px-2">
+            <img src={eggLogo} alt="Egg Bucket Logo" className="h-8 w-auto object-contain" />
+            <span className="text-[9px] text-orange-500 font-extrabold tracking-widest uppercase mt-1 block">Admin Portal</span>
           </div>
 
           {/* Nav Items */}
