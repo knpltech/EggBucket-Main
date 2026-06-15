@@ -1,16 +1,30 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
+  --font-heading: "Outfit", "Plus Jakarta Sans", sans-serif;
+  
+  --color-primary: #FF7A00;
+  --color-secondary: #FFF4E8;
+  --color-bg-main: #FAF7F0;
+  --color-card-bg: #FFFFFF;
+  --color-success-custom: #22C55E;
+  --color-warning-custom: #F59E0B;
+}
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.5;
   font-weight: 400;
-  background-color: #f8fafc;
+  background-color: var(--color-bg-main);
+  color: #1F2937;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   display: block;
+  background-color: var(--color-bg-main);
 }
 
 #root {
@@ -18,4 +32,28 @@ body {
   min-height: 100vh;
   display: block;
   text-align: left;
+}
+
+/* Glassmorphism utility */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Animations */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1) translateY(0px);
+  }
+  50% {
+    opacity: 0.25;
+    transform: scale(1.05) translateY(-10px);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s infinite ease-in-out;
 }
