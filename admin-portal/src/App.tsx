@@ -628,6 +628,7 @@ export default function App() {
                 <option value="last30days">Last 30 Days</option>
                 <option value="thismonth">This Month</option>
                 <option value="lastmonth">Last Month</option>
+                <option value="all">All Time</option>
                 <option value="custom">Custom Range</option>
               </select>
               <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
