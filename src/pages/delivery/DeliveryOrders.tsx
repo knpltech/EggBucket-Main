@@ -455,8 +455,8 @@ const DeliveryOrders = () => {
             </CardContent>
           </Card>
 
-          {/* Google Maps */}
-          {!!viewingOrder.latitude && !!viewingOrder.longitude && (
+          {/* Google Maps (Only show when out for delivery) */}
+          {viewingOrder.status === "out" && !!viewingOrder.latitude && !!viewingOrder.longitude && (
             <a
               href={`https://www.google.com/maps/dir/?api=1&destination=${viewingOrder.latitude},${viewingOrder.longitude}`}
               target="_blank"
