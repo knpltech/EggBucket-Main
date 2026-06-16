@@ -12,7 +12,7 @@ import eggTrayBlackImg from "@/assets/egg-tray-black.jpg";
 const OrderPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { quantity = 1, pricePerCrate = 180 } = (location.state as any) || {};
+  const { quantity = 1, pricePerCrate = 180, trayPrice = 49 } = (location.state as any) || {};
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -23,7 +23,6 @@ const OrderPage = () => {
   const [fetchingLocation, setFetchingLocation] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [trayQuantity, setTrayQuantity] = useState(0);
-  const trayPrice = 49;
 
   const totalPrice = quantity * pricePerCrate + trayQuantity * trayPrice;
 

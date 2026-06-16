@@ -11,17 +11,19 @@ import bannerImg from "@/assets/banner.jpeg";
 const Index = () => {
   const [quantity, setQuantity] = useState(1);
   const [pricePerCrate, setPricePerCrate] = useState<number | null>(null);
+  const [trayPrice, setTrayPrice] = useState<number>(49);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsub = subscribeToPrice((price) => {
-      setPricePerCrate(price);
+    const unsub = subscribeToPrice((data) => {
+      setPricePerCrate(data.pricePerCrate);
+      setTrayPrice(data.trayPrice);
     });
     return () => unsub();
   }, []);
 
   const handleOrder = () => {
-    navigate("/order", { state: { quantity, pricePerCrate } });
+    navigate("/order", { state: { quantity, pricePerCrate, trayPrice } });
   };
 
   if (pricePerCrate === null) {

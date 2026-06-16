@@ -124,22 +124,30 @@ export async function deleteOrder(orderId: string) {
 }
 
 // ─── Pricing ───
-export async function getPrice(): Promise<number> {
+export async function getPrice(): Promise<{ pricePerCrate: number; trayPrice: number }> {
   const snap = await getDoc(doc(db, "settings", "pricing"));
-  if (snap.exists()) return snap.data().pricePerCrate ?? 180;
-  return 180;
+  if (snap.exists()) {
+    return {
+      pricePerCrate: snap.data().pricePerCrate ?? 180,
+      trayPrice: snap.data().trayPrice ?? 49
+    };
+  }
+  return { pricePerCrate: 180, trayPrice: 49 };
 }
 
-export async function setPrice(pricePerCrate: number) {
-  await setDoc(doc(db, "settings", "pricing"), { pricePerCrate });
+export async function setPrice(pricePerCrate: number, trayPrice: number) {
+  await setDoc(doc(db, "settings", "pricing"), { pricePerCrate, trayPrice });
 }
 
-export function subscribeToPrice(cb: (pricePerCrate: number) => void) {
+export function subscribeToPrice(cb: (price: { pricePerCrate: number; trayPrice: number }) => void) {
   return onSnapshot(doc(db, "settings", "pricing"), (snap) => {
     if (snap.exists()) {
-      cb(snap.data().pricePerCrate ?? 180);
+      cb({
+        pricePerCrate: snap.data().pricePerCrate ?? 180,
+        trayPrice: snap.data().trayPrice ?? 49
+      });
     } else {
-      cb(180);
+      cb({ pricePerCrate: 180, trayPrice: 49 });
     }
   });
 }

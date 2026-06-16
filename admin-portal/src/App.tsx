@@ -121,6 +121,7 @@ export default function App() {
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [executives, setExecutives] = useState<DeliveryExecutive[]>([]);
   const [price, setPriceVal] = useState(180);
+  const [trayPrice, setTrayPriceVal] = useState(49);
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
 
   // Global Date Filter
@@ -157,7 +158,10 @@ export default function App() {
     if (!user) return;
     const unsubOrders = subscribeToOrders(setOrders);
     const unsubExecs = subscribeToDeliveryExecutives(setExecutives);
-    const unsubPrice = subscribeToPrice(setPriceVal);
+    const unsubPrice = subscribeToPrice((p) => {
+      setPriceVal(p.pricePerCrate);
+      setTrayPriceVal(p.trayPrice);
+    });
     
     return () => {
       unsubOrders();
@@ -195,8 +199,8 @@ export default function App() {
 
   const handleSavePrice = async () => {
     try {
-      await setPrice(price);
-      alert("Egg Crate Price updated to ₹" + price + "!");
+      await setPrice(price, trayPrice);
+      alert("Pricing configurations updated successfully!");
     } catch {
       alert("Failed to update price.");
     }
@@ -588,7 +592,7 @@ export default function App() {
                activeTab === "orders" ? "Manage customer shipments, dispatch logs, and delivery assignments." : 
                activeTab === "customers" ? "Forecast restocking schedules based on consumption intervals." : 
                activeTab === "delivery" ? "Review agent completion rates, incentives, and payroll payouts." : 
-               "Configure standard unit rates for crates and add-on packaging."}
+               "Configure standard unit rates for trays and add-on packaging."}
             </p>
           </div>
 
@@ -892,7 +896,7 @@ export default function App() {
                       <div className="py-3 space-y-1">
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ITEMS ORDERED</p>
                         <p className="text-sm font-bold text-slate-800">{selectedOrder.quantity} trays (30 Eggs each)</p>
-                        <p className="text-xs text-slate-500">Price per crate: ₹{selectedOrder.pricePerCrate}</p>
+                        <p className="text-xs text-slate-500">Price per tray: ₹{selectedOrder.pricePerCrate}</p>
                         {selectedOrder.includeTray && (
                           <p className="text-xs font-bold text-primary mt-1">
                             ★ Plastic Tray Add-on: {selectedOrder.trayQuantity || 1} Pcs (₹{selectedOrder.trayPrice || 49} each)
@@ -1033,12 +1037,14 @@ export default function App() {
           )}
 
           {activeTab === "pricing" && (
-            <div className="max-w-md bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-              <h4 className="text-base font-bold text-slate-900">Crate Price Settings</h4>
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-600 block">Default Price per Crate (30 Eggs)</label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
+            <div className="max-w-md bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-5">
+              <h4 className="text-base font-bold text-slate-900">Tray & Add-on Price Settings</h4>
+              
+              <div className="space-y-4">
+                {/* Egg Tray Price */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-600 block">Default Price per Tray (30 Eggs)</label>
+                  <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
                     <input
                       type="number"
@@ -1047,16 +1053,32 @@ export default function App() {
                       className="w-full pl-8 pr-4 py-2.5 border border-slate-200 rounded-xl text-slate-700 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all text-sm font-semibold"
                     />
                   </div>
-                  <button
-                    onClick={handleSavePrice}
-                    className="px-4 py-2.5 bg-primary hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-sm transition-all cursor-pointer"
-                  >
-                    Save Price
-                  </button>
                 </div>
+
+                {/* Plastic Tray Price */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-600 block">Default Price per Plastic Tray (Add-on)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                    <input
+                      type="number"
+                      value={trayPrice}
+                      onChange={(e) => setTrayPriceVal(Number(e.target.value))}
+                      className="w-full pl-8 pr-4 py-2.5 border border-slate-200 rounded-xl text-slate-700 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all text-sm font-semibold"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSavePrice}
+                  className="w-full py-2.5 bg-primary hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-sm transition-all cursor-pointer mt-2"
+                >
+                  Save Pricing Parameters
+                </button>
               </div>
-              <p className="text-xs text-slate-400">
-                This pricing acts as the base unit rate for ordering crates, reflecting on the ordering page.
+
+              <p className="text-xs text-slate-400 leading-normal">
+                These configurations define the base unit rate for ordering egg trays and the optional add-on packaging (plastic trays) reflecting instantly on the user ordering page.
               </p>
             </div>
           )}
