@@ -10,7 +10,8 @@ import {
   assignOrder,
   updateOrderStatus,
   createDeliveryExecutive,
-  deleteDeliveryExecutive
+  deleteDeliveryExecutive,
+  deleteOrder
 } from "./lib/firebase";
 import type { OrderData, DeliveryExecutive } from "./lib/firebase";
 import AdminAnalytics from "./components/AdminAnalytics";
@@ -232,6 +233,16 @@ export default function App() {
       } catch {
         alert("Failed to delete executive.");
       }
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    try {
+      await deleteOrder(orderId);
+      setSelectedOrderId(null);
+      alert("Order deleted successfully.");
+    } catch (err: any) {
+      alert("Failed to delete order: " + (err.message || err));
     }
   };
 
@@ -920,6 +931,19 @@ export default function App() {
                             Assigned Executive: <span className="font-bold text-slate-800">{executives.find(ex => ex.id === selectedOrder.assignedTo)?.name || selectedOrder.assignedTo}</span>
                           </p>
                         )}
+                      </div>
+
+                      <div className="pt-4 flex justify-end">
+                        <button
+                          onClick={async () => {
+                            if (window.confirm("Are you sure you want to delete this order permanently? This cannot be undone.")) {
+                              await handleDeleteOrder(selectedOrder.id!);
+                            }
+                          }}
+                          className="px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/50 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Trash2 className="h-4 w-4" /> Delete Order
+                        </button>
                       </div>
                     </div>
                   ) : (

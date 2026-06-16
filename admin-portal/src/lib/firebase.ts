@@ -118,6 +118,11 @@ export async function deleteDeliveryExecutive(execId: string) {
   await deleteDoc(doc(db, "deliveryExecutives", execId));
 }
 
+export async function deleteOrder(orderId: string) {
+  const { deleteDoc } = await import("firebase/firestore");
+  await deleteDoc(doc(db, "orders", orderId));
+}
+
 // ─── Pricing ───
 export async function getPrice(): Promise<number> {
   const snap = await getDoc(doc(db, "settings", "pricing"));
