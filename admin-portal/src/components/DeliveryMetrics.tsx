@@ -29,8 +29,8 @@ interface DeliveryMetricsProps {
 
 export default function DeliveryMetrics({ orders, executives }: DeliveryMetricsProps) {
   // Salary Config states
-  const [baseSalary, setBaseSalary] = useState(500); // Daily base
-  const [incentivePerOrder, setIncentivePerOrder] = useState(25); // Per order delivered
+  const [baseSalary, setBaseSalary] = useState(0); // Daily base
+  const [incentivePerOrder, setIncentivePerOrder] = useState(0); // Per order delivered
 
   const [settlingId, setSettlingId] = useState<string | null>(null);
   const [settleMessage, setSettleMessage] = useState<string | null>(null);

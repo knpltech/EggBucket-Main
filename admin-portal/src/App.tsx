@@ -124,7 +124,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
 
   // Global Date Filter
-  const [globalDateRange, setGlobalDateRange] = useState<string>("last7days");
+  const [globalDateRange, setGlobalDateRange] = useState<string>("today");
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
 
