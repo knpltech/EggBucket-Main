@@ -4,6 +4,15 @@ apply plugin: 'org.jetbrains.kotlin.android'
 android {
     namespace = "com.eggbucket.delivery"
     compileSdk = rootProject.ext.compileSdkVersion
+    signingConfigs {
+        release {
+            storeFile file("/Users/jayanthshikar/Eggbucket.jks")
+            storePassword System.getenv("RELEASE_STORE_PASSWORD") ?: (project.findProperty("RELEASE_STORE_PASSWORD") ?: "")
+            keyAlias System.getenv("RELEASE_KEY_ALIAS") ?: (project.findProperty("RELEASE_KEY_ALIAS") ?: "")
+            keyPassword System.getenv("RELEASE_KEY_PASSWORD") ?: (project.findProperty("RELEASE_KEY_PASSWORD") ?: "")
+        }
+    }
+
     defaultConfig {
         applicationId "com.eggbucket.delivery"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -24,7 +33,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
 }
