@@ -31,7 +31,6 @@ export default function DeliveryMetrics({ orders, executives }: DeliveryMetricsP
   // Salary Config states
   const [baseSalary, setBaseSalary] = useState(500); // Daily base
   const [incentivePerOrder, setIncentivePerOrder] = useState(25); // Per order delivered
-  const [travelAllowance, setTravelAllowance] = useState(100); // Daily travel allowance
 
   const [settlingId, setSettlingId] = useState<string | null>(null);
   const [settleMessage, setSettleMessage] = useState<string | null>(null);
@@ -93,15 +92,15 @@ export default function DeliveryMetrics({ orders, executives }: DeliveryMetricsP
           ? Math.round((item.completedCount / item.assignedCount) * 100)
           : 0;
 
-        // Base salary is daily base + travel allowance if they completed at least 1 order
-        item.baseSalaryVal = item.completedCount > 0 ? (baseSalary + travelAllowance) : 0;
+        // Base salary is daily base if they completed at least 1 order
+        item.baseSalaryVal = item.completedCount > 0 ? baseSalary : 0;
         item.incentivesVal = item.completedCount * incentivePerOrder;
         item.totalPayoutVal = item.baseSalaryVal + item.incentivesVal;
       }
     });
 
     return stats;
-  }, [orders, executives, baseSalary, incentivePerOrder, travelAllowance]);
+  }, [orders, executives, baseSalary, incentivePerOrder]);
 
   // Summary Cards calculations
   const summary = useMemo(() => {
@@ -394,21 +393,6 @@ export default function DeliveryMetrics({ orders, executives }: DeliveryMetricsP
                 />
               </div>
 
-              {/* Travel Allowance */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 block">Travel Allowance (Daily)</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="500"
-                    value={travelAllowance}
-                    onChange={(e) => setTravelAllowance(Number(e.target.value))}
-                    className="w-full pl-8 pr-4 py-2 border border-slate-200 rounded-xl text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/25 transition-all text-xs font-semibold shadow-inner"
-                  />
-                </div>
-              </div>
             </div>
           </div>
 

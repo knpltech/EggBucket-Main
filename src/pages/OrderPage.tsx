@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Loader2, Minus, Plus } from "lucide-react";
 import { createOrder } from "@/lib/firebase";
 import { toast } from "@/hooks/use-toast";
 import eggTrayBlackImg from "@/assets/egg-tray-black.jpg";
@@ -22,10 +22,10 @@ const OrderPage = () => {
   const [longitude, setLongitude] = useState(0);
   const [fetchingLocation, setFetchingLocation] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [includeTray, setIncludeTray] = useState(false);
+  const [trayQuantity, setTrayQuantity] = useState(0);
   const trayPrice = 49;
 
-  const totalPrice = quantity * pricePerCrate + (includeTray ? trayPrice : 0);
+  const totalPrice = quantity * pricePerCrate + trayQuantity * trayPrice;
 
   const fetchLocation = () => {
   if (!navigator.geolocation) {
@@ -107,8 +107,9 @@ const OrderPage = () => {
         quantity,
         pricePerCrate,
         totalPrice,
-        includeTray,
-        trayPrice: includeTray ? trayPrice : 0,
+        includeTray: trayQuantity > 0,
+        trayQuantity,
+        trayPrice: trayQuantity > 0 ? trayPrice : 0,
       });
       toast({ title: "Order placed successfully!", description: `Order ID: ${orderId}` });
       navigate("/order-success", { state: { orderId } });
@@ -209,18 +210,38 @@ const OrderPage = () => {
                     <p className="font-extrabold text-sm text-orange-600 mt-0.5">₹49</p>
                   </div>
                 </div>
-                <Button
-                  variant={includeTray ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setIncludeTray(!includeTray)}
-                  className={`h-8 px-3 rounded-lg text-xs font-semibold ${
-                    includeTray
-                      ? "bg-green-600 hover:bg-green-700 text-white border-0"
-                      : "border-orange-200 text-orange-600 hover:bg-orange-55 animate-gentle-scale"
-                  }`}
-                >
-                  {includeTray ? "✓ Added" : "+ Add"}
-                </Button>
+                {trayQuantity === 0 ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTrayQuantity(quantity)}
+                    className="h-8 px-3 rounded-lg text-xs font-semibold border-orange-200 text-orange-600 hover:bg-orange-50 animate-gentle-scale"
+                  >
+                    + Add
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setTrayQuantity(q => Math.max(0, q - 1))}
+                      className="h-8 w-8 rounded-full border-orange-200 bg-white hover:bg-orange-50 text-orange-600 shadow-sm"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </Button>
+                    <span className="font-extrabold text-sm text-slate-800 min-w-[2ch] text-center">
+                      {trayQuantity}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setTrayQuantity(q => q + 1)}
+                      className="h-8 w-8 rounded-full border-orange-200 bg-white hover:bg-orange-50 text-orange-600 shadow-sm"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -240,13 +261,13 @@ const OrderPage = () => {
                   {quantity} × ₹{pricePerCrate}
                 </span>
               </div>
-              {includeTray && (
+              {trayQuantity > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-amber-800">
-                    1 × Empty Plastic Egg Tray
+                    {trayQuantity} × Empty Plastic Egg Tray
                   </span>
                   <span className="text-amber-900 font-semibold">
-                    ₹{trayPrice}
+                    ₹{trayQuantity * trayPrice}
                   </span>
                 </div>
               )}

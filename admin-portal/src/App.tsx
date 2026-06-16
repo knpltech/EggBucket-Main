@@ -5,8 +5,8 @@ import {
   onAuthChange, 
   subscribeToOrders, 
   subscribeToDeliveryExecutives, 
-  getPrice, 
   setPrice, 
+  subscribeToPrice,
   assignOrder,
   updateOrderStatus,
   createDeliveryExecutive,
@@ -156,11 +156,12 @@ export default function App() {
     if (!user) return;
     const unsubOrders = subscribeToOrders(setOrders);
     const unsubExecs = subscribeToDeliveryExecutives(setExecutives);
-    getPrice().then(setPriceVal);
+    const unsubPrice = subscribeToPrice(setPriceVal);
     
     return () => {
       unsubOrders();
       unsubExecs();
+      unsubPrice();
     };
   }, [user]);
 
@@ -290,7 +291,7 @@ export default function App() {
       alert("No orders available to export.");
       return;
     }
-    const headers = ["Order ID", "Customer Name", "Phone", "Quantity (Trays)", "Price Per Tray (₹)", "Total Price (₹)", "Status", "Address", "Date Placed"];
+    const headers = ["Order ID", "Customer Name", "Phone", "Quantity (Trays)", "Price Per Tray (₹)", "Plastic Trays (Qty)", "Total Price (₹)", "Status", "Address", "Date Placed"];
     const rows = ordersTabSorted.map(o => {
       const date = o.createdAt?.toDate ? o.createdAt.toDate() : new Date(o.createdAt);
       return [
@@ -299,6 +300,7 @@ export default function App() {
         o.phone,
         o.quantity,
         o.pricePerCrate,
+        o.includeTray ? (o.trayQuantity || 1) : 0,
         o.totalPrice,
         o.status,
         `"${o.flatNo}, ${o.street}"`,
@@ -334,6 +336,7 @@ export default function App() {
         "Phone Number": o.phone,
         "Quantity (Trays)": o.quantity,
         "Price Per Tray (₹)": o.pricePerCrate,
+        "Plastic Trays (Qty)": o.includeTray ? (o.trayQuantity || 1) : 0,
         "Total Price (₹)": o.totalPrice,
         "Status": o.status.toUpperCase(),
         "Address": `${o.flatNo}, ${o.street}`,
@@ -881,7 +884,7 @@ export default function App() {
                         <p className="text-xs text-slate-500">Price per crate: ₹{selectedOrder.pricePerCrate}</p>
                         {selectedOrder.includeTray && (
                           <p className="text-xs font-bold text-primary mt-1">
-                            ★ Plastic Tray Add-on (₹{selectedOrder.trayPrice || 49})
+                            ★ Plastic Tray Add-on: {selectedOrder.trayQuantity || 1} Pcs (₹{selectedOrder.trayPrice || 49} each)
                           </p>
                         )}
                         <p className="text-sm font-black text-slate-900 mt-2">Total Amount: ₹{selectedOrder.totalPrice}</p>

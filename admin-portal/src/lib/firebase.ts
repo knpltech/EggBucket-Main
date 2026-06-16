@@ -49,6 +49,11 @@ export interface OrderData {
   trayPrice?: number;
   settled?: boolean;
   settledAt?: any; // Timestamp
+  trayQuantity?: number;
+  deliveredAt?: any; // Timestamp
+  deliveryLatitude?: number;
+  deliveryLongitude?: number;
+  gpsAccuracyAtDelivery?: number;
 }
 
 export interface DeliveryExecutive {
@@ -122,6 +127,16 @@ export async function getPrice(): Promise<number> {
 
 export async function setPrice(pricePerCrate: number) {
   await setDoc(doc(db, "settings", "pricing"), { pricePerCrate });
+}
+
+export function subscribeToPrice(cb: (pricePerCrate: number) => void) {
+  return onSnapshot(doc(db, "settings", "pricing"), (snap) => {
+    if (snap.exists()) {
+      cb(snap.data().pricePerCrate ?? 180);
+    } else {
+      cb(180);
+    }
+  });
 }
 
 // ─── Cash Settlement ───

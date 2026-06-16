@@ -261,13 +261,44 @@ export default function AdminAnalytics({ orders, executives, dateRange, customSt
       color: COLORS[index % COLORS.length]
     }));
 
+    const cashMetrics = (() => {
+      let totalCashCollected = 0;
+      let totalCashPending = 0;
+      const agentHoldings: Record<string, { collected: number; pending: number }> = {};
+
+      executives.forEach(ex => {
+        if (ex.id) {
+          agentHoldings[ex.id] = { collected: 0, pending: 0 };
+        }
+      });
+
+      currentOrders.forEach(o => {
+        if (o.status === "delivered") {
+          const cashVal = o.totalPrice || 0;
+          totalCashCollected += cashVal;
+          if (!o.settled) {
+            totalCashPending += cashVal;
+          }
+          if (o.assignedTo && agentHoldings[o.assignedTo]) {
+            agentHoldings[o.assignedTo].collected += cashVal;
+            if (!o.settled) {
+              agentHoldings[o.assignedTo].pending += cashVal;
+            }
+          }
+        }
+      });
+
+      return { totalCashCollected, totalCashPending, agentHoldings };
+    })();
+
     return {
       currentKPIs,
       trends,
       dailyChartData,
       monthlyChartData,
       topCustomersChartData,
-      execChartData
+      execChartData,
+      cashMetrics
     };
   }, [orders, executives, dateRange, customStartDate, customEndDate]);
 
@@ -380,6 +411,87 @@ export default function AdminAnalytics({ orders, executives, dateRange, customSt
             </div>
           );
         })}
+      </div>
+
+      {/* Cash Position & Agent Holdings */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-orange-50/20 p-6 rounded-3xl border border-orange-100/50 shadow-sm animate-in fade-in duration-300">
+        <div className="lg:col-span-12">
+          <h4 className="text-base font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+            💰 Cash Position & Agent Holdings
+          </h4>
+          <p className="text-xs text-slate-500 mt-1">Real-time monitoring of cash collected and pending agent deposits for the selected range</p>
+        </div>
+        
+        {/* Left Side: Summary Cards */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/50 shadow-sm flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Total Cash Collected</p>
+              <p className="text-xl font-black text-slate-800 font-heading">
+                ₹{stats.cashMetrics.totalCashCollected.toLocaleString("en-IN")}
+              </p>
+              <p className="text-[9px] text-slate-400 font-bold">In selected period</p>
+            </div>
+            <div className="p-3 bg-blue-50/60 text-blue-500 rounded-xl">
+              <IndianRupee className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/50 shadow-sm flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Total Cash With Agents</p>
+              <p className="text-xl font-black text-orange-600 font-heading">
+                ₹{stats.cashMetrics.totalCashPending.toLocaleString("en-IN")}
+              </p>
+              <p className="text-[9px] text-orange-500 font-bold">Pending Deposit</p>
+            </div>
+            <div className="p-3 bg-orange-50 text-primary rounded-xl">
+              <IndianRupee className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Table */}
+        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/50 shadow-sm overflow-hidden flex flex-col justify-between">
+          <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+            <h5 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Agent-wise Cash Holdings</h5>
+          </div>
+          <div className="max-h-[140px] overflow-y-auto flex-grow">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50/20 text-slate-400 font-bold text-[9px] border-b border-slate-100 uppercase tracking-wider">
+                  <th className="py-2.5 px-4">Agent Name</th>
+                  <th className="py-2.5 px-4 text-right">Cash Collected</th>
+                  <th className="py-2.5 px-4 text-right">Cash Pending Deposit</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {executives.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="py-8 text-center text-slate-400 font-semibold">
+                      No delivery agents registered.
+                    </td>
+                  </tr>
+                ) : (
+                  executives.map(ex => {
+                    const holdings = stats.cashMetrics.agentHoldings[ex.id || ""] || { collected: 0, pending: 0 };
+                    return (
+                      <tr key={ex.id} className="hover:bg-slate-50/30 transition-colors">
+                        <td className="py-2.5 px-4 font-bold text-slate-900">{ex.name}</td>
+                        <td className="py-2.5 px-4 text-right font-semibold text-slate-600">
+                          ₹{holdings.collected.toLocaleString("en-IN")}
+                        </td>
+                        <td className="py-2.5 px-4 text-right font-black text-orange-600">
+                          ₹{holdings.pending.toLocaleString("en-IN")}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Graphs Grid */}

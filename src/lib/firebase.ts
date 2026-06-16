@@ -33,6 +33,13 @@ export interface OrderData {
   createdAt: ReturnType<typeof Timestamp.now>;
   includeTray?: boolean;
   trayPrice?: number;
+  trayQuantity?: number;
+  deliveredAt?: ReturnType<typeof Timestamp.now>;
+  deliveryLatitude?: number;
+  deliveryLongitude?: number;
+  gpsAccuracyAtDelivery?: number;
+  settled?: boolean;
+  settledAt?: ReturnType<typeof Timestamp.now>;
 }
 
 export interface DeliveryExecutive {
@@ -136,11 +143,34 @@ export function subscribeToExecOrders(execId: string, cb: (orders: OrderData[]) 
   });
 }
 
-export async function updateOrderStatus(orderId: string, status: OrderData["status"]) {
-  await updateDoc(doc(db, "orders", orderId), { status });
+export async function updateOrderStatus(
+  orderId: string, 
+  status: OrderData["status"],
+  deliveryDetails?: { lat: number; lng: number; accuracy: number }
+) {
+  const updateData: any = { status };
+  if (status === "delivered") {
+    updateData.deliveredAt = Timestamp.now();
+    if (deliveryDetails) {
+      updateData.deliveryLatitude = deliveryDetails.lat;
+      updateData.deliveryLongitude = deliveryDetails.lng;
+      updateData.gpsAccuracyAtDelivery = deliveryDetails.accuracy;
+    }
+  }
+  await updateDoc(doc(db, "orders", orderId), updateData);
 }
 
 // ─── Pricing ───
+export function subscribeToPrice(cb: (pricePerCrate: number) => void) {
+  return onSnapshot(doc(db, "settings", "pricing"), (snap) => {
+    if (snap.exists()) {
+      cb(snap.data().pricePerCrate ?? 180);
+    } else {
+      cb(180);
+    }
+  });
+}
+
 export async function getPrice(): Promise<number> {
   const snap = await getDoc(doc(db, "settings", "pricing"));
   if (snap.exists()) return snap.data().pricePerCrate ?? 180;

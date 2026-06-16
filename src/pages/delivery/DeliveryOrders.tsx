@@ -69,6 +69,7 @@ const DeliveryOrders = () => {
   const [execName, setExecName] = useState<string | null>(null);
 
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
@@ -86,6 +87,7 @@ const DeliveryOrders = () => {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         });
+        setGpsAccuracy(position.coords.accuracy);
       },
       (error) => {
         console.error("Error watching geolocation:", error);
@@ -95,6 +97,7 @@ const DeliveryOrders = () => {
               lat: pos.coords.latitude,
               lng: pos.coords.longitude
             });
+            setGpsAccuracy(pos.coords.accuracy);
           },
           (err) => console.error("Error getting geolocation:", err)
         );
@@ -263,7 +266,10 @@ const DeliveryOrders = () => {
 
   const handleMarkDelivered = async (orderId: string) => {
     try {
-      await updateOrderStatus(orderId, "delivered");
+      const deliveryDetails = currentLocation 
+        ? { lat: currentLocation.lat, lng: currentLocation.lng, accuracy: gpsAccuracy || 0 }
+        : undefined;
+      await updateOrderStatus(orderId, "delivered", deliveryDetails);
       toast({ title: "Marked as delivered ✓" });
     } catch {
       toast({ title: "Failed to update", variant: "destructive" });
@@ -415,9 +421,9 @@ const DeliveryOrders = () => {
                 <div className="flex-1">
                   <p className="text-xs text-slate-500">Items Ordered</p>
                   <p className="font-semibold text-slate-800">{viewingOrder.quantity} trays (30 Eggs)</p>
-                  {viewingOrder.includeTray && (
+                  {viewingOrder.includeTray && (viewingOrder.trayQuantity ?? 0) > 0 && (
                     <p className="text-xs font-bold text-orange-600 mt-1">
-                      ✨ Includes Add-on: Empty Plastic Egg Tray (₹{viewingOrder.trayPrice || 49})
+                      ✨ Includes: {viewingOrder.trayQuantity} × Empty Plastic Egg Tray (₹{viewingOrder.trayPrice || 49} each)
                     </p>
                   )}
                   <p className="text-xs font-bold text-slate-700 mt-1">
@@ -471,6 +477,59 @@ const DeliveryOrders = () => {
             </a>
           )}
 
+          {/* Proximity / GPS Info for Out for Delivery status */}
+          {viewingOrder.status === "out" && (() => {
+            const customerLat = viewingOrder.latitude;
+            const customerLng = viewingOrder.longitude;
+            const hasCustomerLocation = !!(customerLat && customerLng);
+            
+            let distanceInMeters: number | null = null;
+            if (hasCustomerLocation && currentLocation) {
+              distanceInMeters = getDistance(
+                currentLocation.lat,
+                currentLocation.lng,
+                customerLat,
+                customerLng
+              ) * 1000;
+            }
+
+            const isWithinRange = distanceInMeters !== null && distanceInMeters <= 50;
+            const canDeliver = !hasCustomerLocation || isWithinRange;
+
+            return (
+              <Card className="border-orange-100 bg-orange-50/20 shadow-sm rounded-2xl border overflow-hidden">
+                <CardContent className="py-4 px-4 space-y-3">
+                  <div className="flex items-center justify-between text-xs border-b border-orange-100/30 pb-2">
+                    <span className="text-slate-500 font-semibold">Live Proximity:</span>
+                    <span className={`font-black text-sm ${isWithinRange ? "text-green-600" : "text-red-600"}`}>
+                      {distanceInMeters !== null 
+                        ? `${distanceInMeters.toFixed(1)} meters` 
+                        : "Calculating distance..."}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs border-b border-orange-100/30 pb-2">
+                    <span className="text-slate-500 font-semibold">GPS Accuracy:</span>
+                    <span className={`font-bold ${gpsAccuracy && gpsAccuracy <= 80 ? "text-slate-700" : "text-amber-600"}`}>
+                      {gpsAccuracy !== null 
+                        ? `±${gpsAccuracy.toFixed(0)}m` 
+                        : "Acquiring accuracy..."}
+                    </span>
+                  </div>
+                  {gpsAccuracy !== null && gpsAccuracy > 80 && (
+                    <p className="text-[10px] text-amber-600 font-bold bg-amber-50 p-2 rounded-lg leading-normal">
+                      ⚠️ Low GPS accuracy. Proximity readings may be delayed or slightly inaccurate. Try moving to an open area.
+                    </p>
+                  )}
+                  {distanceInMeters !== null && !isWithinRange && (
+                    <p className="text-[11px] text-red-600 font-black bg-red-50 p-3 rounded-lg leading-normal">
+                      You must be within 50 meters of the delivery location to complete this order. Current distance is {distanceInMeters.toFixed(0)}m.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })()}
+
           {/* Action Buttons */}
           <div className="pt-2 pb-6">
             {viewingOrder.status === "accepted" && (
@@ -481,14 +540,38 @@ const DeliveryOrders = () => {
                 Start Delivery (Out for Delivery)
               </Button>
             )}
-            {viewingOrder.status === "out" && (
-              <Button
-                onClick={() => handleMarkDelivered(viewingOrder.id!)}
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-base rounded-xl font-semibold"
-              >
-                ✓ Mark as Delivered
-              </Button>
-            )}
+            {viewingOrder.status === "out" && (() => {
+              const customerLat = viewingOrder.latitude;
+              const customerLng = viewingOrder.longitude;
+              const hasCustomerLocation = !!(customerLat && customerLng);
+              
+              let distanceInMeters: number | null = null;
+              if (hasCustomerLocation && currentLocation) {
+                distanceInMeters = getDistance(
+                  currentLocation.lat,
+                  currentLocation.lng,
+                  customerLat,
+                  customerLng
+                ) * 1000;
+              }
+
+              const isWithinRange = distanceInMeters !== null && distanceInMeters <= 50;
+              const canDeliver = !hasCustomerLocation || isWithinRange;
+
+              return (
+                <Button
+                  onClick={() => handleMarkDelivered(viewingOrder.id!)}
+                  disabled={!canDeliver}
+                  className={`w-full text-white py-6 text-base rounded-xl font-semibold transition-all ${
+                    canDeliver 
+                      ? "bg-green-600 hover:bg-green-700 shadow-md shadow-green-600/20" 
+                      : "bg-slate-300 cursor-not-allowed opacity-80"
+                  }`}
+                >
+                  ✓ Mark as Delivered
+                </Button>
+              );
+            })()}
           </div>
         </div>
       </div>

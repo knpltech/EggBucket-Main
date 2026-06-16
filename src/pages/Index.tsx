@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Minus, Plus, ShoppingCart, Loader2 } from "lucide-react";
-import { getPrice } from "@/lib/firebase";
+import { subscribeToPrice } from "@/lib/firebase";
 import eggTrayImg from "@/assets/egg-tray.png";
 import eggLogo from "@/assets/logo-egg-png.png";
 import bannerImg from "@/assets/banner.jpeg";
@@ -14,20 +14,10 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch price with a 3-second timeout fallback
-    const pricePromise = getPrice();
-    const timeoutPromise = new Promise<number>((resolve) =>
-      setTimeout(() => resolve(350), 3000)
-    );
-
-    Promise.race([pricePromise, timeoutPromise])
-      .then((val) => {
-        setPricePerCrate(val);
-      })
-      .catch((err) => {
-        console.error("Failed to load price:", err);
-        setPricePerCrate(350); // fallback
-      });
+    const unsub = subscribeToPrice((price) => {
+      setPricePerCrate(price);
+    });
+    return () => unsub();
   }, []);
 
   const handleOrder = () => {
